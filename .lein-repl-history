@@ -1,0 +1,6 @@
+(require '[ring.adapter.jetty :refer [run-jetty]])
+(run-jetty (fn [req] {} ) {:port 3001})
+(require '[ring.adapter.jetty :refer [run-jetty]])
+(run-jetty (fn [req] {:status 200}) {:port 3001})
+(require '[ring.adapter.jetty :refer [run-jetty]])
+(run-jetty (fn [req] {:status 200}) {:port 3001})
