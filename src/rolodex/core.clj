@@ -11,9 +11,10 @@
 
 (defn handler "request -> response"
   [req]
-  {:status 200
-   :headers {"Content-Type" "text/plain; charset=UTF-8"}
-   :body "Babby's first Ring app! More Improved!"})
+  (if (and (= (:request-method req) :get) (= (:uri req) "/"))
+    {:status 200
+     :headers {"Content-Type" "application/edn; charset=UTF-8"}
+     :body (prn-str (vals @contacts))}))
 
 (defonce server
   (run-jetty #'handler {:port 3000
