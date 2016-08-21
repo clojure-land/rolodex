@@ -9,17 +9,20 @@
   (-> (constantly nil)
       (wrap-proxy "/api" "http://localhost:3000/")))
 
-(defn handle-change-events [_ctx event]
+(defn on-change-reload-clj-files [_ctx event]
   (->> event
        (filter #(= (:kind %) :modify))
        (map (comp :file str))
        (filter #(.endsWith % ".clj"))
        (run! load-file)))
 
-(defn instant-reload-component [watch-paths]
-  (hawk/watch!
-   [{:paths watch-paths
-     :handler handle-change-events}]))
+(defrecord HawkComponent [paths handler]
+  component/Lifecycle
+  (start [this]
+    (assoc this :watcher (hawk/watch! [{:paths paths :handler handler}])))
+  (stop [this]
+    (hawk/stop! (:watcher this))
+    (dissoc this :watcher)))
 
 (defn ->system [garden-paths css-paths]
   (component/system-map
@@ -29,7 +32,7 @@
                                                   ;; but not being correctly picked up
                                                   (assoc-in [:figwheel-options :ring-handler] api-proxy)))
    :css-watcher (figwheel/css-watcher {:watch-paths css-paths})
-   :garden-watcher (instant-reload-component garden-paths)))
+   :garden-watcher (->HawkComponent garden-paths on-change-reload-clj-files)))
 
 (defonce system (->system ["src/rolodex/styles.clj"]
                           ["resources/public/css"]))
