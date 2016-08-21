@@ -1,3 +1,6 @@
-.nrepl-port
-target
-.lein-repl-history
+gui/target
+gui/resources/public/js/compiled
+gui/target
+gui/figwheel_server.log
+gui/.nrepl-port
+gui/.lein-repl-history
