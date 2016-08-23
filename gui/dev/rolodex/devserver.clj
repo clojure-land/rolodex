@@ -47,5 +47,8 @@
   (stop)
   (start))
 
+(defn cljs-repl []
+  (figwheel/cljs-repl (:figwheel-system system) nil))
+
 (defn -main [& _]
   (start))
