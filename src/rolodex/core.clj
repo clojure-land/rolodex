@@ -1,13 +1,9 @@
 (ns rolodex.core
-  (:require [ring.adapter.jetty :refer [run-jetty]]))
+  (:require [ring.adapter.jetty :refer [run-jetty]]
+            [rolodex.generator :as gen]))
 
-(defn random-uuid []
-  (java.util.UUID/randomUUID))
-
-(def contacts (atom (let [id (random-uuid)]
-                      {id {:id id
-                           :full-name "Trish Turtle"
-                           :skills ["LISP" "Lambda Calculus"]}})))
+(defonce contacts (atom (into {} (map (juxt :id identity)
+                                      (map gen/contact gen/names)))))
 
 (defn handler "request -> response"
   [req]
