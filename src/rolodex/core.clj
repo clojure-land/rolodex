@@ -8,25 +8,25 @@
 
 (defn- get-all-contacts []
   {:status 200
-   :headers {"Content-Type" "application/edn; charset=UTF-8"}
-   :body (prn-str (vals @contacts))})
+   :body (vals @contacts)})
 
 (defn- create-new-contact [req]
   (if-let [instream (:body req)]
     (let [body (slurp instream)
           contact (edn/read-string body)]
       (swap! contacts assoc (:id contact) contact)
-
       {:status 201
-       :headers {"Content-Type" "application/edn; charset=UTF-8"}
-       :body (prn-str contact)})))
+       :body contact})))
 
 (defn handler "request -> response"
   [req]
-  (if (= (:uri req) "/")
-    (case  (:request-method req)
-      :get (get-all-contacts)
-      :post (create-new-contact req))))
+  (-> (if (= (:uri req) "/")
+        (case  (:request-method req)
+          :get (get-all-contacts)
+          :post (create-new-contact req)))
+      (assoc-in [:headers "Content-Type"] "application/edn; charset=UTF-8")
+      (update :body prn-str)))
+
 
 (defonce server
   (run-jetty #'handler {:port 3000
