@@ -39,9 +39,13 @@
 
 (defn- update-contact [uuid params]
   (let [contact (assoc params :id uuid)]
-    (swap! contacts uuid contact)
+    (swap! contacts assoc uuid contact)
     {:status 200
      :body contact}))
+
+(defn- delete-contact [uuid]
+  (swap! contacts dissoc uuid)
+  {:status 204}) ;; 204 = empty response
 
 (defn handler "request -> response"
   [req]
@@ -56,7 +60,8 @@
         (let [uuid (UUID/fromString uuid)]
           (case method
             :get (get-contact uuid)
-            :put (update-contact uuid params)))))))
+            :put (update-contact uuid params)
+            :delete (delete-contact uuid)))))))
 
 (defonce server
   (run-jetty (wrap-edn #'handler) {:port 3000
