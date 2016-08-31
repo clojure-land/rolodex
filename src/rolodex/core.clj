@@ -11,11 +11,10 @@
   {:status 200
    :body (vals @contacts)})
 
-(defn- create-new-contact [req]
-  (let [contact (:params req)]
-    (swap! contacts assoc (:id contact) contact)
-    {:status 201
-     :body contact}))
+(defn- create-new-contact [contact]
+  (swap! contacts assoc (:id contact) contact)
+  {:status 201
+   :body contact})
 
 (defn- parse-params [req]
   (if-let [instream (:body req)]
@@ -38,18 +37,26 @@
   {:status 200
    :body (@contacts uuid)})
 
+(defn- update-contact [uuid params]
+  (let [contact (assoc params :id uuid)]
+    (swap! contacts uuid contact)
+    {:status 200
+     :body contact}))
+
 (defn handler "request -> response"
   [req]
   (let [uri (:uri req)
-        method (:request-method req)]
+        method (:request-method req)
+        params (:params req)]
     (if (= uri "/")
       (case method
         :get (get-all-contacts)
-        :post (create-new-contact req))
+        :post (create-new-contact params))
       (if-let [uuid (second (re-find uuid-uri-pattern uri))]
         (let [uuid (UUID/fromString uuid)]
           (case method
-            :get (get-contact uuid)))))))
+            :get (get-contact uuid)
+            :put (update-contact uuid params)))))))
 
 (defonce server
   (run-jetty (wrap-edn #'handler) {:port 3000
